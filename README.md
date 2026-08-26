@@ -6,6 +6,7 @@ camera([x],[y]);
 
 Пример:
 
+```
 #include "pilib.h"
 
 // INIT
@@ -24,3 +25,4 @@ void draw(void)
     cls(12);
     print("HELLO PILIB!", x, y, 7);
 }
+```

@@ -1,12 +1,14 @@
 ```
 API
 
-print([x],[y],[color]);
-cls([color]);
-camera([x],[y]);
+print(x, y, color);
+cls(color);
+spr(id, x, y)
+spr_pro(id, x, y, w, h, flip_x, flip_y);
+camera(x, y);
+
 
 Пример:
-
 #include "pilib.h"
 
 // INIT

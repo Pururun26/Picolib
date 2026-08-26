@@ -1,4 +1,4 @@
-#include "pilib.h"
+#include "picolib.h"
 #include <stdbool.h>
 #include <raylib.h>
 
@@ -33,7 +33,7 @@ static Color palette[16] = {
 };
 
 // --- 1. РЕАЛИЗАЦИЯ ЗАГРУЗКИ СПРАЙТ-ЛИСТА ---
-void pilib_load_spritesheet(const char* filepath)
+void picolib_load_spritesheet(const char* filepath)
 {
     sprite_sheet = LoadTexture(filepath);
     if (sprite_sheet.id != 0)
@@ -49,15 +49,15 @@ void pilib_load_spritesheet(const char* filepath)
         sprite_sheet = LoadTextureFromImage(img);
         UnloadImage(img);
         SetTextureFilter(sprite_sheet, TEXTURE_FILTER_POINT);
-        TraceLog(LOG_WARNING, "PILIB: Файл '%s' не найден. Используется заглушка.", filepath);
+        TraceLog(LOG_WARNING, "PICOLIB: Файл '%s' не найден. Используется заглушка.", filepath);
         spritesheet_loaded = true;
     }
 }
 
 // --- 2. КАМЕРА ---
-pilib_vec2 camera(int16_t x, int16_t y)
+picolib_vec2 camera(int16_t x, int16_t y)
 {
-    pilib_vec2 prev = {cam_x, cam_y};
+    picolib_vec2 prev = {cam_x, cam_y};
     cam_x = x;
     cam_y = y;
     return prev;
@@ -137,17 +137,16 @@ void spr(int16_t n, int16_t x, int16_t y) {
 // --- 5. ГЛАВНЫЙ ЦИКЛ ---
 int main(void) {
     // Исправлено: переименовали переменную, чтобы не было конфликта имен (shadowing) позже
-    int16_t initial_scale = 512 / PILIB_WIDTH;
+    int16_t initial_scale = 512 / PICOLIB_WIDTH;
     if (initial_scale < 1) initial_scale = 1;
     
-    InitWindow(PILIB_WIDTH * initial_scale, PILIB_HEIGHT * initial_scale, PILIB_TITLE);
+    InitWindow(PICOLIB_WIDTH * initial_scale, PICOLIB_HEIGHT * initial_scale, PICOLIB_TITLE);
     SetTargetFPS(30);
 
     // ВАЖНО: Загружаем спрайт-лист здесь! 
-    // Убедитесь, что файл my_sprite.png лежит в той же папке, откуда запускается программа.
-    pilib_load_spritesheet(PILIB_SS);
+    picolib_load_spritesheet(PICOLIB_SS);
 
-    target = LoadRenderTexture(PILIB_WIDTH, PILIB_HEIGHT);
+    target = LoadRenderTexture(PICOLIB_WIDTH, PICOLIB_HEIGHT);
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT);
 
     while (!WindowShouldClose()) {
@@ -166,19 +165,19 @@ int main(void) {
         int screenH = GetScreenHeight();
 
         // Вычисляем масштаб с сохранением пропорций
-        float scaleX = (float)screenW / PILIB_WIDTH;
-        float scaleY = (float)screenH / PILIB_HEIGHT;
+        float scaleX = (float)screenW / PICOLIB_WIDTH;
+        float scaleY = (float)screenH / PICOLIB_HEIGHT;
         float current_scale = (scaleX < scaleY) ? scaleX : scaleY; // Переименовали в current_scale
 
         // Вычисляем смещение для центрирования
-        int offsetX = (int)((screenW - PILIB_WIDTH * current_scale) / 2);
-        int offsetY = (int)((screenH - PILIB_HEIGHT * current_scale) / 2);
+        int offsetX = (int)((screenW - PICOLIB_WIDTH * current_scale) / 2);
+        int offsetY = (int)((screenH - PICOLIB_HEIGHT * current_scale) / 2);
 
         // Отрисовываем текстуру с центрированием
         DrawTexturePro(
             target.texture,
-            (Rectangle){ 0, 0, (float)PILIB_WIDTH, (float)-PILIB_HEIGHT },
-            (Rectangle){ (float)offsetX, (float)offsetY, PILIB_WIDTH * current_scale, PILIB_HEIGHT * current_scale },
+            (Rectangle){ 0, 0, (float)PICOLIB_WIDTH, (float)-PICOLIB_HEIGHT },
+            (Rectangle){ (float)offsetX, (float)offsetY, PICOLIB_WIDTH * current_scale, PICOLIB_HEIGHT * current_scale },
             (Vector2){ 0, 0 },
             0.0f,
             WHITE

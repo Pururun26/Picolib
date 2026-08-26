@@ -1,8 +1,9 @@
-#ifndef PILIB_H
-#define PILIB_H
+#ifndef PICOLIB_H
+#define PICOLIB_H
 
 #include <stdint.h>
-#include "pilib_conf.h"
+#include <stdbool.h>
+#include "picolib_conf.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -12,10 +13,10 @@ extern "C" {
 typedef struct {
     int16_t x;
     int16_t y;
-} pilib_vec2;
+} picolib_vec2;
 
 // --- Инициализация ---
-void pilib_load_spritesheet(const char* filepath); // Загрузка спрайт-листа
+void picolib_load_spritesheet(const char* filepath); // Загрузка спрайт-листа
 
 // --- Основные функции ---
 void update(void);
@@ -35,7 +36,7 @@ void spr_pro(int16_t n, int16_t x, int16_t y, float w, float h, bool flip_x, boo
 // --- API для камеры ---
 // Устанавливает смещение камеры и возвращает предыдущее значение.
 // Чтобы сбросить камеру, вызовите camera(0, 0).
-pilib_vec2 camera(int16_t x, int16_t y);
+picolib_vec2 camera(int16_t x, int16_t y);
 
 #ifdef __cplusplus
 }

@@ -6,4 +6,7 @@
 #define PILIB_HEIGHT  128
 #define PILIB_TITLE   "pilib game"
 
+// Путь и имя файла спрайт-листа (должен быть 128x128 пикселей для 256 спрайтов 8x8)
+#define PILIB_SS      "pilib_spritesheet.png"
+
 #endif

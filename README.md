@@ -1,3 +1,4 @@
+```
 API
 
 print([x],[y],[color]);
@@ -6,7 +7,6 @@ camera([x],[y]);
 
 Пример:
 
-```
 #include "pilib.h"
 
 // INIT

@@ -9,7 +9,7 @@ camera(x, y);
 
 
 Пример:
-#include "pilib.h"
+#include "picolib.h"
 
 // INIT
 int16_t x = 1;

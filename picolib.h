@@ -17,14 +17,19 @@ typedef struct {
 
 // --- Инициализация ---
 void picolib_load_spritesheet(const char* filepath); // Загрузка спрайт-листа
+void picolib_load_font(const char* filepath);
 
 // --- Основные функции ---
 void update(void);
 void draw(void);
 
-// --- API для рисования и ввода ---
+// --- API для рисования ---
 void cls(uint8_t color);
 void print(const char *text, int16_t x, int16_t y, uint8_t color);
+void circ(int16_t x, int16_t y, int16_t r, uint8_t color);
+void circfill(int16_t x, int16_t y, int16_t r, uint8_t color);
+void rect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color);
+void rectfill(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color);
 
 // --- Спрайты ---
 // Простая версия: рисует один спрайт 8x8 без отражений (самый частый кейс)
@@ -32,6 +37,10 @@ void spr(int16_t n, int16_t x, int16_t y);
 
 // Полная версия (аналог DrawTexturePro): с масштабом, диапазоном и отражениями
 void spr_pro(int16_t n, int16_t x, int16_t y, float w, float h, bool flip_x, bool flip_y);
+
+// --- API для ввода ---
+bool btn(uint8_t id);
+bool btnp(uint8_t id);
 
 // --- API для камеры ---
 // Устанавливает смещение камеры и возвращает предыдущее значение.

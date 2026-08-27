@@ -32,11 +32,11 @@ void rect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color);
 void rectfill(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color);
 
 // --- Спрайты ---
-// Простая версия: рисует один спрайт 8x8 без отражений (самый частый кейс)
+// Простая версия: рисует один спрайт 8x8
 void spr(int16_t n, int16_t x, int16_t y);
 
-// Полная версия (аналог DrawTexturePro): с масштабом, диапазоном и отражениями
-void spr_pro(int16_t n, int16_t x, int16_t y, float w, float h, bool flip_x, bool flip_y);
+// Полная версия: w и h теперь указывают КОЛИЧЕСТВО блоков 8x8 (а не пиксели!)
+void spr_pro(int16_t n, int16_t x, int16_t y, uint8_t w, uint8_t h, bool flip_x, bool flip_y);
 
 // --- API для ввода ---
 bool btn(uint8_t id);

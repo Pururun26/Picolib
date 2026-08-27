@@ -32,6 +32,7 @@ static Color palette[16] = {
     {0xFF, 0xCC, 0xAA, 0xFF}  // 15: light-peach
 };
 
+
 // --- 1. РЕАЛИЗАЦИЯ ЗАГРУЗКИ СПРАЙТ-ЛИСТА ---
 void picolib_load_spritesheet(const char* filepath)
 {
@@ -49,10 +50,38 @@ void picolib_load_spritesheet(const char* filepath)
         sprite_sheet = LoadTextureFromImage(img);
         UnloadImage(img);
         SetTextureFilter(sprite_sheet, TEXTURE_FILTER_POINT);
-        TraceLog(LOG_WARNING, "PICOLIB: Файл '%s' не найден. Используется заглушка.", filepath);
+        TraceLog(LOG_WARNING, "PICOLIB: Spritesheet '%s' not found. Using placeholder.", filepath);
         spritesheet_loaded = true;
     }
 }
+
+// --- ПЕРЕМЕННЫЕ ДЛЯ ШРИФТА ---
+static Font pico_font;
+static bool font_loaded = false;
+static float font_size = 5.0f;    // Размер шрифта (5px идеально для сетки 128x128)
+static float font_spacing = 1.0f; // Расстояние между буквами
+
+// --- 1. РЕАЛИЗАЦИЯ ЗАГРУЗКИ ШРИФТА ---
+void picolib_load_font(const char* filepath) {
+    Image img = LoadImage(filepath);
+    
+    if (img.data != NULL) {
+        // Загружаем шрифт из изображения. 
+        // MAGENTA используется как цвет прозрачности (если фон не альфа-канал).
+        // 32 - это ASCII код пробела (первый символ в сетке должен быть пробелом).
+        pico_font = LoadFontFromImage(img, MAGENTA, 32);
+        UnloadImage(img);
+        font_loaded = true;
+        TraceLog(LOG_INFO, "PICOLIB: Font '%s' loaded successfully.", filepath);
+    } else {
+        // Если файл не найден, используем стандартный шрифт Raylib в качестве запасного варианта
+        pico_font = GetFontDefault();
+        font_size = 10.0f; // Стандартный шрифт лучше смотрится в размере 10
+        font_loaded = false;
+        TraceLog(LOG_WARNING, "PICOLIB: Font file '%s' not found. Using default font.", filepath);
+    }
+}
+
 
 // --- 2. КАМЕРА ---
 picolib_vec2 camera(int16_t x, int16_t y)
@@ -62,6 +91,7 @@ picolib_vec2 camera(int16_t x, int16_t y)
     cam_y = y;
     return prev;
 }
+
 
 // --- 3. РИСОВАНИЕ ---
 void cls(uint8_t color)
@@ -76,20 +106,47 @@ void cls(uint8_t color)
     }
 }
 
-void print(const char *text, int16_t x, int16_t y, uint8_t color)
-{
-    if (color < 16)
-    {
-        DrawText(text, x - cam_x, y - cam_y, 10, palette[color]);
-    }
-    else
-    {
-        DrawText(text, x - cam_x, y - cam_y, 10, palette[7]);
-    }
+void print(const char *text, int16_t x, int16_t y, uint8_t color) {
+    Color c = (color < 16) ? palette[color] : palette[7];
+    
+    // Позиция с учетом камеры
+    Vector2 pos = { (float)(x - cam_x), (float)(y - cam_y) };
+    
+    // Используем DrawTextEx для отрисовки кастомного шрифта
+    DrawTextEx(pico_font, text, pos, font_size, font_spacing, c);
+}
+
+
+// --- ПРИМИТИВЫ РИСОВАНИЯ ---
+void circ(int16_t x, int16_t y, int16_t r, uint8_t color) {
+    DrawCircleLines(x - cam_x, y - cam_y, (float)r, palette[color]);
+}
+
+void circfill(int16_t x, int16_t y, int16_t r, uint8_t color) {
+    DrawCircle(x - cam_x, y - cam_y, (float)r, palette[color]);
+}
+
+void rect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color) {
+    // МАГИЯ: x1 и y1 инклюзивны, поэтому добавляем 1 к ширине и высоте
+    int16_t w = (x1 - x0) + 1;
+    int16_t h = (y1 - y0) + 1;
+    
+    // Если ширина или высота получились <= 0, ничего не рисуем (защита от ошибок)
+    if (w <= 0 || h <= 0) return;
+
+    DrawRectangleLines(x0 - cam_x, y0 - cam_y, w, h, palette[color]);
+}
+
+void rectfill(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color) {
+    int16_t w = (x1 - x0) + 1;
+    int16_t h = (y1 - y0) + 1;
+    
+    if (w <= 0 || h <= 0) return;
+
+    DrawRectangle(x0 - cam_x, y0 - cam_y, w, h, palette[color]);
 }
 
 // --- 4. СПРАЙТЫ ---
-
 // Полная версия (основная логика)
 void spr_pro(int16_t n, int16_t x, int16_t y, float w, float h, bool flip_x, bool flip_y) {
     if (!spritesheet_loaded) return;
@@ -134,8 +191,40 @@ void spr(int16_t n, int16_t x, int16_t y) {
     spr_pro(n, x, y, 1.0f, 1.0f, false, false);
 }
 
-// --- 5. ГЛАВНЫЙ ЦИКЛ ---
-int main(void) {
+
+// --- 5. API для ввода ---
+bool btn(uint8_t id)
+{
+    switch (id)
+    {
+        case 0: return IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT);
+        case 1: return IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT);
+        case 2: return IsKeyDown(KEY_W) || IsKeyDown(KEY_UP);
+        case 3: return IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN);
+        case 4: return IsKeyDown(KEY_J) || IsKeyDown(KEY_Z);
+        case 5: return IsKeyDown(KEY_K) || IsKeyDown(KEY_X);
+        default: return false;
+    }
+}
+
+bool btnp(uint8_t id)
+{
+    switch (id)
+    {
+        case 0: return IsKeyPressed(KEY_A) || IsKeyPressed(KEY_LEFT);
+        case 1: return IsKeyPressed(KEY_D) || IsKeyPressed(KEY_RIGHT);
+        case 2: return IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP);
+        case 3: return IsKeyPressed(KEY_S) || IsKeyPressed(KEY_DOWN);
+        case 4: return IsKeyPressed(KEY_J) || IsKeyPressed(KEY_Z);
+        case 5: return IsKeyPressed(KEY_K) || IsKeyPressed(KEY_X);
+        default: return false;
+    }
+}
+
+
+// --- 6. ГЛАВНЫЙ ЦИКЛ ---
+int main(void)
+{
     // Исправлено: переименовали переменную, чтобы не было конфликта имен (shadowing) позже
     int16_t initial_scale = 512 / PICOLIB_WIDTH;
     if (initial_scale < 1) initial_scale = 1;
@@ -143,13 +232,15 @@ int main(void) {
     InitWindow(PICOLIB_WIDTH * initial_scale, PICOLIB_HEIGHT * initial_scale, PICOLIB_TITLE);
     SetTargetFPS(30);
 
-    // ВАЖНО: Загружаем спрайт-лист здесь! 
+    // ВАЖНО: Загружаем спрайт-лист, шрифт здесь! 
     picolib_load_spritesheet(PICOLIB_SS);
+    picolib_load_font(PICOLIB_FONT);
 
     target = LoadRenderTexture(PICOLIB_WIDTH, PICOLIB_HEIGHT);
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT);
 
-    while (!WindowShouldClose()) {
+    while (!WindowShouldClose())
+    {
         update();
 
         if (IsKeyPressed(KEY_F11)) ToggleFullscreen(); 
@@ -187,9 +278,7 @@ int main(void) {
     
     // Очистка памяти при выходе
     UnloadRenderTexture(target);
-    if (spritesheet_loaded) {
-        UnloadTexture(sprite_sheet);
-    }
+    if (spritesheet_loaded) UnloadTexture(sprite_sheet);
     CloseWindow();
 
     return 0;

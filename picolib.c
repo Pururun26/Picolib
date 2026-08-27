@@ -146,49 +146,46 @@ void rectfill(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color) {
     DrawRectangle(x0 - cam_x, y0 - cam_y, w, h, palette[color]);
 }
 
+
 // --- 4. СПРАЙТЫ ---
-// Полная версия (основная логика)
-void spr_pro(int16_t n, int16_t x, int16_t y, float w, float h, bool flip_x, bool flip_y) {
+void spr_pro(int16_t n, int16_t x, int16_t y, uint8_t w, uint8_t h, bool flip_x, bool flip_y) {
     if (!spritesheet_loaded) return;
+    if (w == 0 || h == 0) return;
 
-    // 1. Вычисляем базовую позицию спрайта в сетке (0..255)
-    int16_t col = n % 16; // 16 спрайтов в ряд (128 / 8)
+    int16_t col = n % 16; 
     int16_t row = n / 16;
+    int16_t pixel_w = w * 8;
+    int16_t pixel_h = h * 8;
 
-    // 2. Формируем исходный прямоугольник (в пикселях текстуры)
     Rectangle src = {
         (float)(col * 8),
         (float)(row * 8),
-        (float)(w * 8),
-        (float)(h * 8)
+        (float)pixel_w,
+        (float)pixel_h
     };
 
-    // 3. Магия отражения (Flip) через отрицательные размеры источника
+    // ОТРАЖЕНИЕ ЧЕРЕЗ ОТРИЦАТЕЛЬНЫЕ РАЗМЕРЫ src
     if (flip_x) {
-        src.x += src.width;
-        src.width = -src.width;
+        src.width = -pixel_w;   // отражаем по X, x остаётся без изменений
     }
     if (flip_y) {
-        src.y += src.height;
-        src.height = -src.height;
+        src.height = -pixel_h;  // отражаем по Y, y остаётся без изменений
     }
 
-    // 4. Формируем целевой прямоугольник на экране (с учетом камеры)
-    // Размеры dest всегда положительные, отражение уже учтено в src
-    Rectangle dest = {
-        (float)(x - cam_x),
-        (float)(y - cam_y),
-        (float)(w * 8),
-        (float)(h * 8)
+    Rectangle dest = { 
+        (float)(x - cam_x), 
+        (float)(y - cam_y), 
+        (float)pixel_w, 
+        (float)pixel_h 
     };
 
-    // 5. Рисуем
     DrawTexturePro(sprite_sheet, src, dest, (Vector2){0, 0}, 0.0f, WHITE);
 }
 
-// Простая версия (удобная обёртка, которой не хватало)
+// Простая версия (удобная обёртка)
 void spr(int16_t n, int16_t x, int16_t y) {
-    spr_pro(n, x, y, 1.0f, 1.0f, false, false);
+    // Теперь передаем целые числа: 1 блок шириной, 1 блок высотой
+    spr_pro(n, x, y, 1, 1, false, false);
 }
 
 

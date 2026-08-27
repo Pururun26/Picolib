@@ -9,4 +9,7 @@
 // Путь и имя файла спрайт-листа (должен быть 128x128 пикселей для 256 спрайтов 8x8)
 #define PICOLIB_SS      "picolib_spritesheet.png"
 
+// Шрифт
+#define PICOLIB_FONT    "font_pico8.png"
+
 #endif

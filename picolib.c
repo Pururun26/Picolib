@@ -1,3 +1,11 @@
+// ============================================================
+//  ПРАВИЛО №1 (CAMERA)
+// ============================================================
+//  Любая функция, которая рисует что-либо на экране (спрайты,
+//  примитивы, текст), ОБЯЗАНА вычитать cam_x и cam_y из
+//  переданных координат, чтобы преобразовать мировые координаты
+//  в экранные.
+
 #include "picolib.h"
 #include <stdbool.h>
 #include <stdio.h>
@@ -11,8 +19,17 @@ static RenderTexture2D target;
 static Texture2D sprite_sheet;
 static bool spritesheet_loaded = false;
 
+// Массив звуков
+#if PICOLIB_USE_AUDIO == 1
+static Sound sounds[PICOLIB_MAX_SOUNDS];
+static bool sounds_loaded[PICOLIB_MAX_SOUNDS];
+#endif
+
+// Камера
 static int16_t cam_x = 0;
 static int16_t cam_y = 0;
+
+bool show_fps = false;
 
 static Color palette[16] = {
     {0x00, 0x00, 0x00, 0xFF}, // 0: black
@@ -82,6 +99,23 @@ void picolib_load_font(const char* filepath) {
         TraceLog(LOG_WARNING, "PICOLIB: Font file '%s' not found. Using default font.", filepath);
     }
 }
+
+
+// --- РЕРЕАЛИЗАЦИЯ ЗАГРУЗКИ ЗВУКОВ ---
+#if PICOLIB_USE_AUDIO == 1
+void picolib_load_sounds() {
+    char path[64];
+    for (int i = 0; i < PICOLIB_MAX_SOUNDS; i++) {
+        snprintf(path, sizeof(path), PICOLIB_SOUNDS_PATH, i);
+        if (FileExists(path)) {  // проверяем, есть ли файл
+            sounds[i] = LoadSound(path);
+            sounds_loaded[i] = (sounds[i].frameCount > 0);
+        } else {
+            sounds_loaded[i] = false;
+        }
+    }
+}
+#endif
 
 
 // --- 2. КАМЕРА ---
@@ -224,6 +258,16 @@ bool btnp(uint8_t id)
 }
 
 
+// --- API для звука ---
+void sfx(int index) {
+#if PICOLIB_USE_AUDIO == 1
+    if (index >= 0 && index < PICOLIB_MAX_SOUNDS && sounds_loaded[index]) {
+        PlaySound(sounds[index]);
+    }
+#endif
+}
+
+
 // --- 6. ГЛАВНЫЙ ЦИКЛ ---
 int main(void)
 {
@@ -233,6 +277,12 @@ int main(void)
     
     InitWindow(PICOLIB_WIDTH * initial_scale, PICOLIB_HEIGHT * initial_scale, PICOLIB_TITLE);
     SetTargetFPS(PICOLIB_FPS);
+
+    // Аудио
+    #if PICOLIB_USE_AUDIO == 1
+        InitAudioDevice();
+        picolib_load_sounds();
+    #endif
 
     // ВАЖНО: Загружаем спрайт-лист, шрифт здесь! 
     picolib_load_spritesheet(PICOLIB_SS);
@@ -247,8 +297,17 @@ int main(void)
 
         if (IsKeyPressed(KEY_F11)) ToggleFullscreen(); 
 
+        // Переключение FPS по Ctrl+P
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_P)) {
+            show_fps = !show_fps;
+        }
+
         BeginTextureMode(target);
         draw();
+        if (show_fps) {
+            int fps = GetFPS();
+            print("FPS: %d", cam_x+PICOLIB_WIDTH-30, cam_y+2, 7, fps); // ваш шрифт + камера
+        }
         EndTextureMode();
 
         BeginDrawing();
@@ -281,6 +340,14 @@ int main(void)
     // Очистка памяти при выходе
     UnloadRenderTexture(target);
     if (spritesheet_loaded) UnloadTexture(sprite_sheet);
+
+    #if PICOLIB_USE_AUDIO == 1
+        for (int i = 0; i < PICOLIB_MAX_SOUNDS; i++) {
+            if (sounds_loaded[i]) UnloadSound(sounds[i]);
+        }
+        CloseAudioDevice();
+    #endif
+
     CloseWindow();
 
     return 0;

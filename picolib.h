@@ -18,6 +18,8 @@ typedef struct {
 // --- Инициализация ---
 void picolib_load_spritesheet(const char* filepath); // Загрузка спрайт-листа
 void picolib_load_font(const char* filepath);
+// Загружает все звуки из папки "sounds/" по именам файлов "0.wav", "1.wav" и т.д.
+void picolib_load_sounds();
 
 // --- Основные функции ---
 void update(void);
@@ -46,6 +48,10 @@ bool btnp(uint8_t id);
 // Устанавливает смещение камеры и возвращает предыдущее значение.
 // Чтобы сбросить камеру, вызовите camera(0, 0).
 picolib_vec2 camera(int16_t x, int16_t y);
+
+// --- API для звука ---
+// Проигрывает звук по индексу
+void sfx(int index);
 
 #ifdef __cplusplus
 }

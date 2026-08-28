@@ -1,4 +1,3 @@
-
 #ifndef PICOLIB_CONF_H
 #define PICOLIB_CONF_H
 
@@ -13,5 +12,9 @@
 
 // Шрифт
 #define PICOLIB_FONT    "font_pico8.png"
+
+#define PICOLIB_MAX_SOUNDS      64                 // Максимум звуков, которые можно загрузить
+#define PICOLIB_USE_AUDIO       1                  // 1 включить звук для игры, 0 отключить звук
+#define PICOLIB_SOUNDS_PATH     "sounds/%d.wav"    // Путь к звуковым файлам
 
 #endif

@@ -26,6 +26,7 @@ void draw(void);
 // --- API для рисования ---
 void cls(uint8_t color);
 void print(const char *text, int16_t x, int16_t y, uint8_t color);
+void print_pro(const char* format, int16_t x, int16_t y, uint8_t color, ...);
 void circ(int16_t x, int16_t y, int16_t r, uint8_t color);
 void circfill(int16_t x, int16_t y, int16_t r, uint8_t color);
 void rect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color);

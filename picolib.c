@@ -107,23 +107,18 @@ void cls(uint8_t color)
     }
 }
 
-void print(const char *text, int16_t x, int16_t y, uint8_t color) {
-    Color c = (color < 16) ? palette[color] : palette[7];
-    
-    // Позиция с учетом камеры
-    Vector2 pos = { (float)(x - cam_x), (float)(y - cam_y) };
-    
-    // Используем DrawTextEx для отрисовки кастомного шрифта
-    DrawTextEx(pico_font, text, pos, font_size, font_spacing, c);
-}
-
-void print_pro(const char* format, int16_t x, int16_t y, uint8_t color, ...) {
+void print(const char* format, int16_t x, int16_t y, uint8_t color, ...) {
     va_list args;
     va_start(args, color); // последний именованный параметр перед ...
     char buffer[256];
     vsnprintf(buffer, sizeof(buffer), format, args);
     va_end(args);
-    print(buffer, x, y, color);
+    
+    Color c = (color < 16) ? palette[color] : palette[7];
+    // Позиция с учетом камеры
+    Vector2 pos = { (float)(x - cam_x), (float)(y - cam_y) };
+    // Используем DrawTextEx для отрисовки кастомного шрифта
+    DrawTextEx(pico_font, buffer, pos, font_size, font_spacing, c);
 }
 
 

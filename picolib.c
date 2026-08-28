@@ -1,5 +1,6 @@
 #include "picolib.h"
 #include <stdbool.h>
+#include <stdio.h>
 #include <raylib.h>
 
 #define TARGET_WINDOW_SIZE 512
@@ -116,6 +117,15 @@ void print(const char *text, int16_t x, int16_t y, uint8_t color) {
     DrawTextEx(pico_font, text, pos, font_size, font_spacing, c);
 }
 
+void print_pro(const char* format, int16_t x, int16_t y, uint8_t color, ...) {
+    va_list args;
+    va_start(args, color); // последний именованный параметр перед ...
+    char buffer[256];
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+    print(buffer, x, y, color);
+}
+
 
 // --- ПРИМИТИВЫ РИСОВАНИЯ ---
 void circ(int16_t x, int16_t y, int16_t r, uint8_t color) {
@@ -227,7 +237,7 @@ int main(void)
     if (initial_scale < 1) initial_scale = 1;
     
     InitWindow(PICOLIB_WIDTH * initial_scale, PICOLIB_HEIGHT * initial_scale, PICOLIB_TITLE);
-    SetTargetFPS(30);
+    SetTargetFPS(PICOLIB_FPS);
 
     // ВАЖНО: Загружаем спрайт-лист, шрифт здесь! 
     picolib_load_spritesheet(PICOLIB_SS);

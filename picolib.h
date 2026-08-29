@@ -1,3 +1,4 @@
+
 #ifndef PICOLIB_H
 #define PICOLIB_H
 
@@ -14,6 +15,23 @@ typedef struct {
     int16_t x;
     int16_t y;
 } picolib_vec2;
+
+// Простая структура для возврата значений мышки
+#if PICOLIB_USE_MOUSE == 1
+
+typedef struct {
+    int16_t x;              // координаты указателя мыши.
+    int16_t y;              // координаты указателя мыши.
+    bool left;              // нажата ли левая кнопка мыши (true/false).
+    bool middle;            // нажата ли средняя кнопка мыши (true/false).
+    bool right;             // нажата ли правая кнопка мыши (true/false).
+    int8_t scrollx;         // scrollx — изменение прокрутки по горизонтали за последний кадр (значение в диапазоне от –31 до 32).
+    int8_t scrolly;         // изменение прокрутки по вертикали за последний кадр (значение в диапазоне от –31 до 32).
+} picolib_mouse;
+
+picolib_mouse mouse(void);
+picolib_mouse mousep(void);
+#endif
 
 // --- Инициализация ---
 void picolib_load_spritesheet(const char* filepath); // Загрузка спрайт-листа
@@ -39,6 +57,8 @@ void spr(int16_t n, int16_t x, int16_t y);
 
 // Полная версия: w и h теперь указывают КОЛИЧЕСТВО блоков 8x8 (а не пиксели!)
 void spr_pro(int16_t n, int16_t x, int16_t y, uint8_t w, uint8_t h, bool flip_x, bool flip_y);
+
+void spr_scale(int16_t n, int16_t x, int16_t y, uint8_t zoom);
 
 // --- API для ввода ---
 bool btn(uint8_t id);

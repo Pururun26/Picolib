@@ -17,4 +17,7 @@
 #define PICOLIB_USE_AUDIO       1                  // 1 включить звук для игры, 0 отключить звук
 #define PICOLIB_SOUNDS_PATH     "sounds/%d.wav"    // Путь к звуковым файлам
 
+// Мышка
+#define PICOLIB_USE_MOUSE       1
+
 #endif

@@ -227,6 +227,33 @@ void spr(int16_t n, int16_t x, int16_t y) {
     spr_pro(n, x, y, 1, 1, false, false);
 }
 
+// Рисует спрайт в маштабировании
+void spr_scale(int16_t n, int16_t x, int16_t y, uint8_t zoom) {
+    if (!spritesheet_loaded) return;
+    if (zoom == 0) return;  // Если zoom 0 — ничего не рисуем
+
+    int16_t col = n % 16;
+    int16_t row = n / 16;
+
+    // Исходный тайл 8×8
+    Rectangle src = {
+        (float)(col * 8),
+        (float)(row * 8),
+        8.0f,
+        8.0f
+    };
+
+    // Целевой прямоугольник с учётом камеры и масштаба
+    Rectangle dest = {
+        (float)(x - cam_x),
+        (float)(y - cam_y),
+        8.0f * zoom,
+        8.0f * zoom
+    };
+
+    DrawTexturePro(sprite_sheet, src, dest, (Vector2){0, 0}, 0.0f, WHITE);
+}
+
 
 // --- 5. API для ввода ---
 bool btn(uint8_t id)
@@ -266,6 +293,88 @@ void sfx(int index) {
     }
 #endif
 }
+
+
+// --- API для мышки ---
+#if PICOLIB_USE_MOUSE == 1
+
+picolib_mouse mouse(void) {
+    picolib_mouse result = {0};
+    
+    // Получаем экранные координаты мыши
+    Vector2 pos = GetMousePosition();
+    
+    // Вычисляем масштаб и смещение (как в главном цикле)
+    int screenW = GetScreenWidth();
+    int screenH = GetScreenHeight();
+    float scaleX = (float)screenW / PICOLIB_WIDTH;
+    float scaleY = (float)screenH / PICOLIB_HEIGHT;
+    float current_scale = (scaleX < scaleY) ? scaleX : scaleY;
+    int offsetX = (int)((screenW - PICOLIB_WIDTH * current_scale) / 2);
+    int offsetY = (int)((screenH - PICOLIB_HEIGHT * current_scale) / 2);
+    
+    // Переводим экранные координаты в логические (внутри рендер-текстуры)
+    int logical_x = (int)((pos.x - offsetX) / current_scale);
+    int logical_y = (int)((pos.y - offsetY) / current_scale);
+    
+    // Преобразуем логические в мировые с учётом камеры
+    result.x = logical_x + cam_x;
+    result.y = logical_y + cam_y;
+    
+    // Состояния кнопок
+    result.left   = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
+    result.middle = IsMouseButtonDown(MOUSE_BUTTON_MIDDLE);
+    result.right  = IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
+    
+    // Прокрутка (колёсико)
+    float wheel_x = GetMouseWheelMoveV().x;  // горизонтальная (если есть)
+    float wheel_y = GetMouseWheelMove();      // вертикальная
+    // Приводим к int8_t с ограничением, чтобы не вылезти за пределы
+    result.scrollx = (int8_t)(wheel_x > 32 ? 32 : (wheel_x < -32 ? -32 : (int8_t)wheel_x));
+    result.scrolly = (int8_t)(wheel_y > 32 ? 32 : (wheel_y < -32 ? -32 : (int8_t)wheel_y));
+    
+    return result;
+}
+
+picolib_mouse mousep(void) {
+    picolib_mouse result = {0};
+    
+    // Получаем экранные координаты мыши
+    Vector2 pos = GetMousePosition();
+    
+    // Вычисляем масштаб и смещение (как в главном цикле)
+    int screenW = GetScreenWidth();
+    int screenH = GetScreenHeight();
+    float scaleX = (float)screenW / PICOLIB_WIDTH;
+    float scaleY = (float)screenH / PICOLIB_HEIGHT;
+    float current_scale = (scaleX < scaleY) ? scaleX : scaleY;
+    int offsetX = (int)((screenW - PICOLIB_WIDTH * current_scale) / 2);
+    int offsetY = (int)((screenH - PICOLIB_HEIGHT * current_scale) / 2);
+    
+    // Переводим экранные координаты в логические (внутри рендер-текстуры)
+    int logical_x = (int)((pos.x - offsetX) / current_scale);
+    int logical_y = (int)((pos.y - offsetY) / current_scale);
+    
+    // Преобразуем логические в мировые с учётом камеры
+    result.x = logical_x + cam_x;
+    result.y = logical_y + cam_y;
+    
+    // Состояния кнопок
+    result.left   = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+    result.middle = IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE);
+    result.right  = IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
+    
+    // Прокрутка (колёсико)
+    float wheel_x = GetMouseWheelMoveV().x;  // горизонтальная (если есть)
+    float wheel_y = GetMouseWheelMove();      // вертикальная
+    // Приводим к int8_t с ограничением, чтобы не вылезти за пределы
+    result.scrollx = (int8_t)(wheel_x > 32 ? 32 : (wheel_x < -32 ? -32 : (int8_t)wheel_x));
+    result.scrolly = (int8_t)(wheel_y > 32 ? 32 : (wheel_y < -32 ? -32 : (int8_t)wheel_y));
+    
+    return result;
+}
+
+#endif
 
 
 // --- 6. ГЛАВНЫЙ ЦИКЛ ---

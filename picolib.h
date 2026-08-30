@@ -1,4 +1,3 @@
-
 #ifndef PICOLIB_H
 #define PICOLIB_H
 
@@ -32,6 +31,13 @@ typedef struct {
 picolib_mouse mouse(void);
 picolib_mouse mousep(void);
 #endif
+
+// --- Структура для col_rect() --- ///
+typedef struct {
+    int16_t x, y;   // левый верхний угол
+    int16_t w, h;   // ширина и высота
+} Rect;
+
 
 // --- Инициализация ---
 void picolib_load_spritesheet(const char* filepath); // Загрузка спрайт-листа
@@ -72,6 +78,9 @@ picolib_vec2 camera(int16_t x, int16_t y);
 // --- API для звука ---
 // Проигрывает звук по индексу
 void sfx(int index);
+
+// --- API для столкновение ---
+bool col_rect(Rect* a, Rect* b);
 
 #ifdef __cplusplus
 }

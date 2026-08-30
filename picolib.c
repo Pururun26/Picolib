@@ -377,6 +377,27 @@ picolib_mouse mousep(void) {
 #endif
 
 
+// --- API для столкновение ---
+bool col_rect(Rect* a, Rect* b) {
+    int16_t a_left = a->x;
+    int16_t a_top = a->y;
+    int16_t a_right = a->x+a->w-1;
+    int16_t a_bottom = a->y+a->h-1;
+
+    int16_t b_left = b->x;
+    int16_t b_top = b->y;
+    int16_t b_right = b->x+b->w-1;
+    int16_t b_bottom = b->y+b->h-1;
+
+    if (a_top > b_bottom) return false;
+    if (b_top > a_bottom) return false;
+    if (a_left > b_right) return false;
+    if (b_left > a_right) return false;
+
+    return true;
+}
+
+
 // --- 6. ГЛАВНЫЙ ЦИКЛ ---
 int main(void)
 {
@@ -385,6 +406,10 @@ int main(void)
     if (initial_scale < 1) initial_scale = 1;
     
     InitWindow(PICOLIB_WIDTH * initial_scale, PICOLIB_HEIGHT * initial_scale, PICOLIB_TITLE);
+
+    // Скрываем системный курсор
+    HideCursor();
+    
     SetTargetFPS(PICOLIB_FPS);
 
     // Аудио
@@ -457,6 +482,7 @@ int main(void)
         CloseAudioDevice();
     #endif
 
+    ShowCursor();
     CloseWindow();
 
     return 0;

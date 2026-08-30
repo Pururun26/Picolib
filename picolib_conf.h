@@ -4,7 +4,7 @@
 // Настройки по умолчанию (пользователь может отредактировать)
 #define PICOLIB_WIDTH   128
 #define PICOLIB_HEIGHT  128
-#define PICOLIB_TITLE   "picolib game"
+#define PICOLIB_TITLE   "PICOLIB GAME"
 #define PICOLIB_FPS     30
 
 // Путь и имя файла спрайт-листа (должен быть 128x128 пикселей для 256 спрайтов 8x8)

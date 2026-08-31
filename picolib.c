@@ -437,6 +437,10 @@ void save(uint8_t pos, uint64_t value) {
     storage_data[pos] = value;
     // return storage_save_all(); // возвращаем результат сохранения
 }
+
+bool is_save(void) {
+    return FileExists(PICOLIB_SAVE_FILE);
+}
 #endif
 
 
@@ -615,6 +619,9 @@ int main(void)
         int autosave_counter = 0;
         const int AUTOSAVE_INTERVAL = 60 * 10 * 60; // 10 минут при 60 FPS = 36000 кадров
     #endif
+
+    // Вызываем пользовательскую инициализацию
+    init();
 
     while (!WindowShouldClose())
     {

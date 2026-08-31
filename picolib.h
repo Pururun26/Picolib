@@ -47,6 +47,7 @@ void picolib_load_font(const char* filepath);
 void picolib_load_sounds();
 
 // --- Основные функции ---
+void init(void);
 void update(void);
 void draw(void);
 
@@ -101,6 +102,8 @@ void mset(int x, int y, uint8_t id);
 
 void save(uint8_t pos, uint64_t value);
 uint64_t load(uint8_t pos);
+// Проверяет есть ли файл
+bool is_save(void);
 
 // --- Текстовые файлы ---
 

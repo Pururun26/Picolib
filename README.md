@@ -72,20 +72,25 @@ bool col_rect(Rect* a, Rect* b);
 Пример:
 #include "picolib.h"
 
-// INIT
-int16_t x = 1;
-int16_t y = 1;
-int16_t z = 1;
 
-void update(void)
-{
-    camera(z, -10);
-    z--;
+void init(void) {}
+
+void update(void) {
+    if (btnp(4)) {
+        tone(220, 10, 40, TONE_PULSE1);
+    }
 }
 
-void draw(void)
-{
-    cls(12);
-    print("HELLO PILIB!", x, y, 7);
+void draw(void) {
+    print("Hello Picolib", 10, 10, 7);
+    spr(1, 10, 10);
+}
+
+
+int main(void) {
+    picolib_init();
+    picolib_run(init, update, draw);
+    picolib_cleanup();
+    return 0;
 }
 ```

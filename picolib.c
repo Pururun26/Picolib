@@ -12,8 +12,6 @@
 #include <string.h>
 #include <raylib.h>
 
-#define TARGET_WINDOW_SIZE 512
-
 static RenderTexture2D target;
 
 // Переменные для спрайт-листа (теперь они статические и скрыты внутри файла)
@@ -587,14 +585,14 @@ bool col_rect(Rect* a, Rect* b) {
 }
 
 
-// --- 6. ГЛАВНЫЙ ЦИКЛ ---
-int main(void)
-{
-    // Исправлено: переименовали переменную, чтобы не было конфликта имен (shadowing) позже
-    int16_t initial_scale = 512 / PICOLIB_WIDTH;
-    if (initial_scale < 1) initial_scale = 1;
+
+void picolib_init(void) {
+    uint16_t initial_scale_x = PICOLIB_WINDOW_WIDTH / PICOLIB_WIDTH;
+    uint16_t initial_scale_y = PICOLIB_WINDOW_HEIGHT / PICOLIB_HEIGHT;
+    if (initial_scale_x < 1) initial_scale_x = 1;
+    if (initial_scale_y < 1) initial_scale_y = 1;
     
-    InitWindow(PICOLIB_WIDTH * initial_scale, PICOLIB_HEIGHT * initial_scale, PICOLIB_TITLE);
+    InitWindow(PICOLIB_WIDTH * initial_scale_x, PICOLIB_HEIGHT * initial_scale_y, PICOLIB_TITLE);
 
     // Скрываем системный курсор
     HideCursor();
@@ -613,20 +611,20 @@ int main(void)
 
     target = LoadRenderTexture(PICOLIB_WIDTH, PICOLIB_HEIGHT);
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT);
+}
 
+
+void picolib_run(void (*init)(void), void (*update)(void), void (*draw)(void)) {
+    // Вызов пользовательской инициализации
+    if (init) init();
 
     #if PICOLIB_USE_SAVE == 1
         int autosave_counter = 0;
         const int AUTOSAVE_INTERVAL = 60 * 10 * 60; // 10 минут при 60 FPS = 36000 кадров
     #endif
 
-    // Вызываем пользовательскую инициализацию
-    init();
-
-    while (!WindowShouldClose())
-    {
-        update();
-
+    while (!WindowShouldClose()) {
+        // Обработка клавиш (F11, Ctrl+P)
         if (IsKeyPressed(KEY_F11)) ToggleFullscreen(); 
 
         // Переключение FPS по Ctrl+P
@@ -644,8 +642,12 @@ int main(void)
             }
         #endif
 
+        // Пользовательское обновление
+        if (update) update();
+
+        // Рендеринг
         BeginTextureMode(target);
-        draw();
+        if (draw) draw();
         if (show_fps) {
             int fps = GetFPS();
             print("FPS: %d", cam_x+PICOLIB_WIDTH-30, cam_y+2, 7, fps); // ваш шрифт + камера
@@ -654,7 +656,6 @@ int main(void)
 
         BeginDrawing();
         ClearBackground(BLACK);
-
         int screenW = GetScreenWidth();
         int screenH = GetScreenHeight();
 
@@ -678,8 +679,10 @@ int main(void)
         );
         EndDrawing();
     }
-    
-    // Очистка памяти при выходе
+}
+
+void picolib_cleanup(void) {
+// Очистка памяти при выходе
     UnloadRenderTexture(target);
     if (spritesheet_loaded) UnloadTexture(sprite_sheet);
 
@@ -697,6 +700,4 @@ int main(void)
 
     ShowCursor();
     CloseWindow();
-
-    return 0;
 }

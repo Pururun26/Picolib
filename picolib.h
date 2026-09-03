@@ -1,3 +1,4 @@
+
 #ifndef PICOLIB_H
 #define PICOLIB_H
 
@@ -135,6 +136,13 @@ void unload_data(unsigned char* data);
 
 // --- API для столкновение ---
 bool col_rect(Rect* a, Rect* b);
+
+
+// --- API для иницилизации ---
+void picolib_init(void);
+void picolib_run(void (*init)(void), void (*update)(void), void (*draw)(void));
+void picolib_cleanup(void);
+
 
 #ifdef __cplusplus
 }

@@ -2,6 +2,9 @@
 #define PICOLIB_CONF_H
 
 // Настройки по умолчанию (пользователь может отредактировать)
+// Размер окна (если не определены, используется автоматический расчёт)
+#define PICOLIB_WINDOW_WIDTH  512
+#define PICOLIB_WINDOW_HEIGHT 512
 #define PICOLIB_WIDTH   128
 #define PICOLIB_HEIGHT  128
 #define PICOLIB_TITLE   "PICOLIB GAME"

@@ -7,6 +7,12 @@
 #include <stdlib.h>
 #include "picolib_conf.h"
 
+// Каналы для tone()
+#define TONE_PULSE1     0   // канал 0 — квадратная волна
+#define TONE_PULSE2     1   // канал 1 — квадратная волна
+#define TONE_TRIANGLE   2   // канал 2 — треугольная волна
+#define TONE_NOISE      3   // канал 3 — шум
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -80,17 +86,21 @@ picolib_vec2 camera(int16_t x, int16_t y);
 
 // --- API для звука ---
 // Проигрывает звук по индексу
+#if PICOLIB_USE_AUDIO == 1
 void sfx(int index);
+#endif
+
+// Генерирует звук с заданными параметрами
+#if PICOLIB_USE_TONE == 1
+void tone(uint32_t frequency, uint32_t duration, uint32_t volume, uint32_t flags);
+#endif
 
 // --- API для карты .csv
-extern uint8_t sprite_flags[SPRITE_COUNT]; // флаги для каждого спрайта
-
 #if PICOLIB_USE_MAP == 1
 extern uint8_t map[MAP_ROWS][MAP_COLS];    // карта (только ID тайлов)
 
-void map_draw(int celx, int cely, int sx, int sy, int celw, int celh, uint8_t layer);
+void map_draw(int celx, int cely, int sx, int sy, int celw, int celh);
 void map_full(void);
-void map_full_layer(uint8_t layer);
 uint8_t mget(int x, int y);
 void mset(int x, int y, uint8_t id);
 #endif

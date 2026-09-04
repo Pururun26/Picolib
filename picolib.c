@@ -212,6 +212,48 @@ void rectfill(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color) {
     DrawRectangle(x0 - cam_x, y0 - cam_y, w, h, palette[color]);
 }
 
+// Рисует линию от (x0, y0) до (x1, y1) цветом color (0-15)
+void line(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color) {
+    Color c = (color < PICOLIB_COLOR_COUNT) ? palette[color] : palette[0];
+    DrawLine(x0 - cam_x, y0 - cam_y, x1 - cam_x, y1 - cam_y, c);
+}
+
+// Рисует пустой овал (эллипс) внутри прямоугольника (x0,y0)-(x1,y1)
+void oval(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color) {
+    Color c = (color < PICOLIB_COLOR_COUNT) ? palette[color] : palette[0];
+    
+    // Нормализуем координаты (чтобы x0 <= x1, y0 <= y1)
+    int16_t left = (x0 < x1) ? x0 : x1;
+    int16_t right = (x0 < x1) ? x1 : x0;
+    int16_t top = (y0 < y1) ? y0 : y1;
+    int16_t bottom = (y0 < y1) ? y1 : y0;
+    
+    int16_t cx = (left + right) / 2;
+    int16_t cy = (top + bottom) / 2;
+    float rx = (right - left) / 2.0f;
+    float ry = (bottom - top) / 2.0f;
+    
+    DrawEllipseLines(cx - cam_x, cy - cam_y, rx, ry, c);
+}
+
+// Рисует залитый овал (эллипс) внутри прямоугольника (x0,y0)-(x1,y1)
+void ovalfill(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color) {
+    Color c = (color < PICOLIB_COLOR_COUNT) ? palette[color] : palette[0];
+    
+    // Нормализуем координаты (чтобы x0 <= x1, y0 <= y1)
+    int16_t left = (x0 < x1) ? x0 : x1;
+    int16_t right = (x0 < x1) ? x1 : x0;
+    int16_t top = (y0 < y1) ? y0 : y1;
+    int16_t bottom = (y0 < y1) ? y1 : y0;
+    
+    int16_t cx = (left + right) / 2;
+    int16_t cy = (top + bottom) / 2;
+    float rx = (right - left) / 2.0f;
+    float ry = (bottom - top) / 2.0f;
+    
+    DrawEllipse(cx - cam_x, cy - cam_y, rx, ry, c);
+}
+
 
 // --- 4. СПРАЙТЫ ---
 void spr_pro(int16_t n, int16_t x, int16_t y, uint8_t w, uint8_t h, bool flip_x, bool flip_y) {

@@ -65,6 +65,9 @@ void circ(int16_t x, int16_t y, int16_t r, uint8_t color);
 void circfill(int16_t x, int16_t y, int16_t r, uint8_t color);
 void rect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color);
 void rectfill(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color);
+void line(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color);
+void oval(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color);
+void ovalfill(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color);
 
 // --- Спрайты ---
 // Простая версия: рисует один спрайт 8x8

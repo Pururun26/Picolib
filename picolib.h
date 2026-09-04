@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "picolib_conf.h"
+#include <raylib.h>
 
 // Каналы для tone()
 #define TONE_PULSE1     0   // канал 0 — квадратная волна
@@ -45,6 +46,24 @@ typedef struct {
     int16_t x, y;   // левый верхний угол
     int16_t w, h;   // ширина и высота
 } Rect;
+
+
+extern RenderTexture2D target;
+extern Texture2D sprite_sheet;
+extern bool spritesheet_loaded;
+extern int16_t cam_x;
+extern int16_t cam_y;
+extern bool show_fps;
+
+extern Font pico_font;
+extern bool font_loaded;
+extern float font_size;    // Размер шрифта (5px идеально для сетки 128x128)
+extern float font_spacing;
+
+#if PICOLIB_USE_AUDIO == 1
+extern Sound sounds[PICOLIB_MAX_SOUNDS];
+extern bool sounds_loaded[PICOLIB_MAX_SOUNDS];
+#endif
 
 
 // --- Инициализация ---
@@ -106,6 +125,9 @@ void map_draw(int celx, int cely, int sx, int sy, int celw, int celh);
 void map_full(void);
 uint8_t mget(int x, int y);
 void mset(int x, int y, uint8_t id);
+
+extern int map_loaded_flag;
+extern int parse_csv_line(const char* line, uint8_t* out, int max_count);
 #endif
 
 // ============================================================
@@ -113,11 +135,13 @@ void mset(int x, int y, uint8_t id);
 // ============================================================
 #if PICOLIB_USE_SAVE == 1
 // --- Хранилище ---
+extern char* save_file_path;
 
 void save(uint8_t pos, uint64_t value);
 uint64_t load(uint8_t pos);
 // Проверяет есть ли файл
 bool is_save(void);
+bool storage_save_all(void); 
 
 // --- Текстовые файлы ---
 

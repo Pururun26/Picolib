@@ -40,25 +40,25 @@
 #include <string.h>
 #include <raylib.h>
 
-static RenderTexture2D target;
+RenderTexture2D target;
 
 // Переменные для спрайт-листа (теперь они статические и скрыты внутри файла)
-static Texture2D sprite_sheet;
-static bool spritesheet_loaded = false;
+Texture2D sprite_sheet;
+bool spritesheet_loaded = false;
 
 // Массив звуков
 #if PICOLIB_USE_AUDIO == 1
-static Sound sounds[PICOLIB_MAX_SOUNDS];
-static bool sounds_loaded[PICOLIB_MAX_SOUNDS];
+Sound sounds[PICOLIB_MAX_SOUNDS];
+bool sounds_loaded[PICOLIB_MAX_SOUNDS];
 #endif
 
 // Камера
-static int16_t cam_x = 0;
-static int16_t cam_y = 0;
+int16_t cam_x = 0;
+int16_t cam_y = 0;
 
 bool show_fps = false;
 
-static Color palette[PICOLIB_COLOR_COUNT] = {
+Color palette[PICOLIB_COLOR_COUNT] = {
     {0x00, 0x00, 0x00, 0xFF}, // 0: black
     {0x1D, 0x2B, 0x53, 0xFF}, // 1: dark-blue
     {0x7E, 0x25, 0x53, 0xFF}, // 2: dark-purple
@@ -101,10 +101,10 @@ void picolib_load_spritesheet(const char* filepath)
 }
 
 // --- ПЕРЕМЕННЫЕ ДЛЯ ШРИФТА ---
-static Font pico_font;
-static bool font_loaded = false;
-static float font_size = 5.0f;    // Размер шрифта (5px идеально для сетки 128x128)
-static float font_spacing = 1.0f; // Расстояние между буквами
+Font pico_font;
+bool font_loaded = false;
+float font_size = 5.0f;    // Размер шрифта (5px идеально для сетки 128x128)
+float font_spacing = 1.0f; // Расстояние между буквами
 
 // --- 1. РЕАЛИЗАЦИЯ ЗАГРУЗКИ ШРИФТА ---
 void picolib_load_font(const char* filepath) {
@@ -589,6 +589,7 @@ picolib_mouse mousep(void) {
 
 // --- API для сохранение и загрузки ---
 #if PICOLIB_USE_SAVE == 1
+char* save_file_path = "storage.bin";
 
 bool save_text(const char *fileName, const char *text) { return SaveFileText(fileName, text); }
 char* load_text(const char* fileName) { return LoadFileText(fileName); }
@@ -604,15 +605,15 @@ static uint64_t storage_data[PICOLIB_SAVE_SLOTS];
 static bool storage_loaded = false;
 
 // Внутренняя функция для сохранения всего массива
-static bool storage_save_all(void) {
+bool storage_save_all(void) {
     TraceLog(LOG_INFO, "DEBUG: storage_save_all() called"); // добавить
-    return save_data(PICOLIB_SAVE_FILE, storage_data, sizeof(storage_data));
+    return save_data(save_file_path, storage_data, sizeof(storage_data));
 }
 
 // Внутренняя функция для загрузки всего массива
 static bool storage_load_all(void) {
     int size;
-    unsigned char* data = load_data(PICOLIB_SAVE_FILE, &size);
+    unsigned char* data = load_data(save_file_path, &size);
     if (data && size == sizeof(storage_data)) {
         memcpy(storage_data, data, sizeof(storage_data));
         unload_data(data);
@@ -648,7 +649,7 @@ void save(uint8_t pos, uint64_t value) {
 }
 
 bool is_save(void) {
-    return FileExists(PICOLIB_SAVE_FILE);
+    return FileExists(save_file_path);
 }
 #endif
 
@@ -656,10 +657,11 @@ bool is_save(void) {
 // -- API для карты ---
 #if PICOLIB_USE_MAP == 1
 uint8_t map[MAP_ROWS][MAP_COLS] = {0};
+int map_loaded_flag = 0;
 
 // Парсит одну строку CSV, извлекая целые числа (0-255) и сохраняя их в массив out.
 // Возвращает количество распарсенных чисел.
-static int parse_csv_line(const char* line, uint8_t* out, int max_count) {
+int parse_csv_line(const char* line, uint8_t* out, int max_count) {
     int count = 0;
     const char* p = line;
     
@@ -707,12 +709,38 @@ static void load_map_from_csv(const char* filename) {
     TraceLog(LOG_INFO, "PICOLIB: Map loaded from '%s'", filename);
 }
 
-// Основная функция рисования карты
+// Загружает карту из данных в памяти (из архива)
+void picolib_load_map_from_memory(const char* data) {
+    int row = 0;
+    const char* p = data;
+    while (*p && row < MAP_ROWS) {
+        // Ищем конец строки
+        const char* end = p;
+        while (*end && *end != '\n' && *end != '\r') end++;
+
+        // Копируем строку в буфер для парсинга
+        char line[2048];
+        int len = end - p;
+        if (len >= sizeof(line)) len = sizeof(line) - 1;
+        strncpy(line, p, len);
+        line[len] = '\0';
+
+        // Парсим строку CSV
+        parse_csv_line(line, map[row], MAP_COLS);
+        row++;
+
+        // Переходим к следующей строке
+        p = end;
+        while (*p == '\n' || *p == '\r') p++;
+    }
+    map_loaded_flag = 1;   // устанавливаем флаг, что карта загружена
+}
+
+// Основная функция рисования карты (без слоёв, рисует все тайлы)
 void map_draw(int celx, int cely, int sx, int sy, int celw, int celh) {
-    static int map_loaded = 0;
-    if (!map_loaded) {
+    if (!map_loaded_flag) {
         load_map_from_csv(PICOLIB_MAP_FILE);
-        map_loaded = 1;
+        map_loaded_flag = 1;
     }
 
     if (celw <= 0 || celh <= 0) return;
@@ -726,17 +754,12 @@ void map_draw(int celx, int cely, int sx, int sy, int celw, int celh) {
             uint8_t tile_id = map[map_y][map_x];
             if (tile_id == 0) continue;
 
-            // Без компенсации: карта будет двигаться вместе с камерой
+            // Рисуем тайл без фильтрации по флагам
             int pixel_x = sx + col * 8;
             int pixel_y = sy + row * 8;
             spr_pro(tile_id, pixel_x, pixel_y, 1, 1, 0, 0);
         }
     }
-}
-
-// Рисует всю карту (без фильтра по слоям)
-void map_full(void) {
-    map_draw(0, 0, 0, 0, MAP_COLS, MAP_ROWS);
 }
 
 uint8_t mget(int x, int y) {

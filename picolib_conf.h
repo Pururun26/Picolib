@@ -38,7 +38,6 @@
 // Сохранение и загрузка
 #define PICOLIB_USE_SAVE        1
 #define PICOLIB_SAVE_SLOTS      64
-#define PICOLIB_SAVE_FILE       "storage.bin"
 
 
 // Карта

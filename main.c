@@ -10,11 +10,8 @@ void update(void) {
 }
 
 void draw(void) {
-    // print("Hello Picolib", 10, 10, 7);
-    // spr(1, 10, 10);
-    line(10, 10, 20, 20, 7);
-    oval(30, 30, 50, 50, 7);
-    ovalfill(70, 70, 100, 10, 7);
+    print("Hello Picolib", 10, 10, 7);
+    spr(1, 10, 10);
 }
 
 
